@@ -272,22 +272,6 @@ func (v *Vagrant) Destroy() (<-chan *CommandOutput, error) {
 	}
 
 	cmd := v.vagrantCommand()
-	cmd.onSuccess = func() {
-		// cleanup vagrant directory on success, as it's no longer needed;
-		// after destroy it should be not possible to call vagrant up
-		// again, call to Create is required first
-		if err := os.RemoveAll(v.VagrantfilePath); err != nil {
-			v.debugf("failed to cleanup %q after destroy: %s", v.VagrantfilePath, err)
-		}
-
-		// We leave empty directory to not make other commands fail
-		// due to missing cwd.
-		//
-		// TODO(rjeczalik): rework lookup to use box id instead
-		if err := os.MkdirAll(v.VagrantfilePath, 0755); err != nil {
-			v.debugf("failed to create empty dir %q after destroy: %s", v.VagrantfilePath, err)
-		}
-	}
 	// if vagrant box is not created, return success - the destroy
 	// should be effectively a nop
 	cmd.ignoreErr = isNotCreated
